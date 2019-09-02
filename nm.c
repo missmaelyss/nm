@@ -10,68 +10,6 @@
 
 char* g_cpu_type_tab[18] = {"vax", "", "", "", "", "mc680x0", "x86", "", "", "mc98000", "hppa", "arm", "mc88000", "sparc", "i860", "", "", "ppc"};
 
-/*
-
-**  t
-**
-**  n_type = e
-**  n_sect = 1
-**  n_desc = 0
-**
-**  n_type = 1e
-**  n_sect = 1
-**  n_desc = 0
-
-**  U
-**  
-**  n_type = 1
-**  n_sect = 0
-**  n_desc = 101
-**
-**  n_type = 1
-**  n_sect = 0
-**  n_desc = 103
-**
-**  n_type = 1
-**  n_sect = 0
-**  n_desc = 107
-**
-**  n_type = 1
-**  n_sect = 0
-**  n_desc = 10a
-
-**  b
-**
-**  n_type = e
-**  n_sect = d
-**  n_desc = 0
-
-**  D
-**
-**  n_type = f
-**  n_sect = 7
-**  n_desc = 1000
-
-**  S
-**
-**  n_type = f
-**  n_sect = 11
-**  n_desc = 0
-**
-**  n_type = f
-**  n_sect = c
-**  n_desc = 0
-
-**  s
-**
-**  n_type = e
-**  n_sect = 4
-**  n_desc = 0
-
-**  A
-**
-*/
-
 int     ft_strlen(char *str)
 {
     int n;
@@ -96,7 +34,7 @@ void    print_value(uint64_t n_value, int size, uint64_t type)
     while (n >= 0)
     {
         str[n] = alpha[n_value % 16];
-        if (size == 16 && type == 1 || size == 8 && type == 0)
+        if (size == 16 && type == 1 || size == 8 && type == 0x1)
             str[n] = ' ';
         n_value = n_value / 16;
         n--;
@@ -119,20 +57,24 @@ void    print_symbol(uint8_t n_type, uint8_t n_sect, uint16_t n_desc)
             write(1, "U", 1);
         else if (n_type == 0x3)
             write(1, "A", 1);
-        else if (n_sect == 0x7 && n_desc == 0x10 || n_sect == 0xc || n_sect == 0x11 || n_sect == 0xd || n_sect == 0x5 || n_sect == 0x6)
+        else if (n_sect == 0x7 && n_desc == 0x10 || n_sect == 0xc || n_sect == 0x11 
+        || n_sect == 0xd && n_desc != 0x80 || n_sect == 0x5 || n_sect == 0x6 && n_desc != 0x80 || n_sect == 0x8
+        || n_sect == 0xb && n_desc != 0x80 || n_sect == 0x4 && n_desc == 0x80 || n_sect == 0xe && n_desc != 0x80)
             write(1, "S", 1);
-        else if (n_sect == 0x7 || n_sect == 0x4 || n_sect == 0xa || n_sect == 0xf)
+        else if (n_sect == 0x7 || n_sect == 0x4 || n_sect == 0xa || n_sect == 0xf || n_sect == 0xb
+        || n_sect == 0x6 || n_sect == 0xc && n_desc == 0x80 || n_sect == 0xd || n_sect == 0xe)
             write(1, "D", 1);
         else
             write(1, "T", 1);
     }
     else if (n_type & 0x0e)
     {
-       if (n_sect == 0x4  || n_sect == 0xd && n_desc == 0x0 || n_sect == 0x5 || n_sect == 0x6)
+       if (n_sect == 0x4 || n_sect == 0x5 || n_sect == 0x6 || n_type == 0x1e && n_sect == 0xf
+       || n_type == 0x1e && n_sect == 0x16 || n_type == 0x1e && n_sect == 0x15)
             write(1, "s", 1);
-        else if (n_sect == 0x8 || n_sect == 0xd || n_sect == 0x10)
+        else if (n_sect == 0x8 || n_sect == 0xd || n_sect == 0x10 || n_sect == 0xe)
             write(1, "b", 1);
-        else if (n_sect == 0x7 || n_sect == 0xf)
+        else if (n_sect == 0x7 || n_sect == 0xf || n_sect == 0xb)
             write(1, "d", 1);
         else
             write(1, "t", 1);
@@ -200,8 +142,8 @@ void quickSort_64(int *tableau, int debut, int fin, char *str, struct nlist_64 *
 {
     int gauche = debut;
     int droite = fin;
-    const char *pivot = ft_strdup(str + swap_endian(el[tableau[debut]].n_un.n_strx, magic));
-    const uint32_t   pivot_value = swap_endian(el[tableau[debut]].n_value, magic);
+    const char *pivot = (debut >= fin) ? NULL : ft_strdup(str + swap_endian(el[tableau[debut]].n_un.n_strx, magic));
+    const uint32_t   pivot_value = (debut >= fin) ? 0 : swap_endian(el[tableau[debut]].n_value, magic);
 
     /* Si le tableau est de longueur nulle, il n'y a rien à faire. */
     if (debut >= fin)
@@ -261,8 +203,9 @@ void quickSort_32(int *tableau, int debut, int fin, char *str, struct nlist *el,
 {
     int gauche = debut;
     int droite = fin;
-    const char *pivot = ft_strdup(str + swap_endian(el[tableau[debut]].n_un.n_strx, magic));
-    const uint32_t   pivot_value = swap_endian(el[tableau[debut]].n_value, magic);
+    const char *pivot = (debut >= fin) ? NULL : ft_strdup(str + swap_endian(el[tableau[debut]].n_un.n_strx, magic));
+    const uint32_t   pivot_value = (debut >= fin) ? 0 : swap_endian(el[tableau[debut]].n_value, magic);
+
 
     /* Si le tableau est de longueur nulle, il n'y a rien à faire. */
     if (debut >= fin)
@@ -318,8 +261,26 @@ void quickSort_32(int *tableau, int debut, int fin, char *str, struct nlist *el,
     quickSort_32(tableau, droite+1, fin, str, el, magic);
 }
 
-int     nb_good_sym(int nsyms, char *str, struct nlist_64 *el, uint32_t magic)
+int     nb_good_sym_64(int nsyms, char *str, struct nlist_64 *el, uint32_t magic)
 {
+    int     i;
+    int     good_sym;
+
+    i = 0;
+    good_sym = 0;
+    while (i < nsyms)
+    {
+        if (!(swap_endian(el[i].n_type, magic) & N_STAB))
+            good_sym++;
+        i++;
+    }
+    return (good_sym);
+}
+
+int     nb_good_sym_32(int nsyms, char *str, struct nlist *el, uint32_t magic)
+{
+    // printf("good sym 32\n");
+
     int     i;
     int     good_sym;
 
@@ -340,7 +301,7 @@ int    *find_order_64(int nsyms, char *str, struct nlist_64 *el, uint32_t magic)
     int     i;
     int     good_sym;
 
-    good_sym = nb_good_sym(nsyms, str, el, magic);
+    good_sym = nb_good_sym_64(nsyms, str, el, magic);
     itab = (int *)malloc(good_sym * sizeof(int));
     i = 0;
     good_sym = 0;
@@ -358,61 +319,28 @@ int    *find_order_64(int nsyms, char *str, struct nlist_64 *el, uint32_t magic)
     return (itab);
 }
 
-// int    *find_order_64(int nsyms, char *str, struct nlist_64 *el, uint32_t magic)
-// {
-//     printf("%d\n", nsyms);
-//     int     *itab;
-//     int     i;
-//     int     j;
-//     int     itmp;
-
-//     itab = (int *)malloc(nsyms * sizeof(int));
-//     i = 0;
-//     while (i < nsyms)
-//     {
-//         itab[i] = i;
-//         i++;
-//     }
-//     i = 0;
-//     while (i < nsyms)
-//     {
-//         j = i + 1;
-//         while (j < nsyms)
-//         {
-//             if (ft_strcmp((char *)(str + swap_endian(el[itab[i]].n_un.n_strx, magic)),
-//                 (char *)(str + swap_endian(el[itab[j]].n_un.n_strx, magic))) > 0 ||
-//                 ft_strcmp((char *)(str + swap_endian(el[itab[i]].n_un.n_strx, magic)),
-//                 (char *)(str + swap_endian(el[itab[j]].n_un.n_strx, magic))) == 0 &&
-//                 el[itab[i]].n_value > el[itab[j]].n_value)
-//             {
-//                 itmp = itab[i];
-//                 itab[i] = itab[j];
-//                 itab[j] = itmp;
-//             }  
-//             j++;
-//         }
-//         i++;
-//     }
-//     return (itab);
-// }
-
 int    *find_order_32(int nsyms, char *str, struct nlist *el, uint32_t magic)
 {
     int     *itab;
     int     i;
+    int     good_sym;
 
-    itab = (int *)malloc(nsyms * sizeof(int));
+    good_sym = nb_good_sym_32(nsyms, str, el, magic);
+    itab = (int *)malloc(good_sym * sizeof(int));
     i = 0;
+    good_sym = 0;
     while (i < nsyms)
     {
-        itab[i] = i;
+        if (!(swap_endian(el[i].n_type, magic) & N_STAB))
+        {
+            itab[good_sym] = i;
+            good_sym++;
+        }
         i++;
     }
-    quickSort_32(itab, 0, nsyms - 1, str, el, magic);
+    quickSort_32(itab, 0, good_sym - 1, str, el, magic);
     return (itab);
 }
-
-
 
 void    print_output_64(struct symtab_command *sym, void *ptr, uint32_t magic, uint8_t ppc)
 {
@@ -422,19 +350,19 @@ void    print_output_64(struct symtab_command *sym, void *ptr, uint32_t magic, u
     char            *stringtable;
     struct nlist_64 *el;
 
-    int     symbols;
-
+    if (ppc)
+        NXSwapInt(magic);
     i = 0;
     stringtable = ptr + swap_endian(sym->stroff, magic);
     el = ptr + swap_endian(sym->symoff, magic);
-    good_sym = nb_good_sym(sym->nsyms, stringtable, el, magic);
-    itab = find_order_64(sym->nsyms, stringtable, el, magic);
+    good_sym = nb_good_sym_64(swap_endian(sym->nsyms, magic), stringtable, el, magic);
+    itab = find_order_64(swap_endian(sym->nsyms, magic), stringtable, el, magic);
     while (i < good_sym)
-    {
+    {    
         if (!(swap_endian(el[itab[i]].n_type, magic) & N_STAB))
         {
-            print_value(swap_endian(el[itab[i]].n_value, magic), 16, swap_endian(el[itab[i]].n_type, magic));
-            // printf("\n%s: ", stringtable + swap_endian(el[itab[i]].n_un.n_strx, magic));
+            print_value(swap_endian(el[itab[i]].n_value, magic), 16, !ppc ? swap_endian(el[itab[i]].n_type, magic) : el[itab[i]].n_type);
+            // printf("%s\t", stringtable + swap_endian(el[itab[i]].n_un.n_strx, magic));
             if (!ppc)
                 print_symbol(swap_endian(el[itab[i]].n_type, magic), swap_endian(el[itab[i]].n_sect, magic), swap_endian(el[itab[i]].n_desc, magic));
             else
@@ -448,22 +376,27 @@ void    print_output_64(struct symtab_command *sym, void *ptr, uint32_t magic, u
 
 void    print_output_32(struct symtab_command *sym, void *ptr, uint32_t magic, uint8_t ppc)
 {
+    // printf("print output 32\n");
+
     int             i;
     int             *itab;
+    int             good_sym;
     char            *stringtable;
     struct nlist    *el;
 
+    if (ppc)
+        NXSwapInt(magic);
     i = 0;
     stringtable = ptr + swap_endian(sym->stroff, magic);
     el = ptr + swap_endian(sym->symoff, magic);
+    good_sym = nb_good_sym_32(swap_endian(sym->nsyms, magic), stringtable, el, magic);
     itab = find_order_32(swap_endian(sym->nsyms, magic), stringtable, el, magic);
-    while (i < swap_endian(sym->nsyms, magic))
-    {
+    while (i < good_sym)
+    {    
         if (!(swap_endian(el[itab[i]].n_type, magic) & N_STAB))
         {
-            print_value(swap_endian(el[itab[i]].n_value, magic), 8, swap_endian(el[itab[i]].n_value, magic));
-            // print_symbol(swap_endian(el[itab[i]].n_type, magic), swap_endian(el[itab[i]].n_sect, magic), swap_endian(el[itab[i]].n_desc, magic));
-            // printf("\n%s: ", stringtable + swap_endian(el[itab[i]].n_un.n_strx, magic));
+            print_value(swap_endian(el[itab[i]].n_value, magic), 8, !ppc ? swap_endian(el[itab[i]].n_type, magic) : el[itab[i]].n_type);
+            // printf("%s\t", stringtable + swap_endian(el[itab[i]].n_un.n_strx, magic));
             if (!ppc)
                 print_symbol(swap_endian(el[itab[i]].n_type, magic), swap_endian(el[itab[i]].n_sect, magic), swap_endian(el[itab[i]].n_desc, magic));
             else
@@ -556,7 +489,7 @@ void    print_for_arch(cpu_type_t cputype)
 
 void    handle_fat_32(void *ptr, char *av)
 {
-    // write(1, "handle fat 32\n", 14);
+    // write(1, "\n", 14);
 
     int                 i;
     struct fat_header   *header;
@@ -643,18 +576,23 @@ int main(int ac, char **av)
     struct stat buf;
     int         n;
 
-    if (ac < 2)
-    {
-        fprintf(stderr, "Please give me an arg\n");
-        return (EXIT_FAILURE);
-    }
+    // if (ac < 2)
+    // {
+    //     fprintf(stderr, "Please give me an arg\n");
+    //     return (EXIT_FAILURE);
+    // }
+    
     n = 1;
+    if (ac < 2)
+        n--;
     while (n < ac)
     {
         if ((fd = open(av[n], O_RDONLY)) < 0)
         {
             perror("open");
-            return (EXIT_FAILURE);
+            n++;
+            continue;
+            // return (EXIT_FAILURE);
         }
         if (fstat(fd, &buf) < 0)
         {
@@ -672,46 +610,12 @@ int main(int ac, char **av)
             perror("munmap");
             return (EXIT_FAILURE);
         }
+        if (close(fd) < 0)
+        {
+            perror("close");
+            return (EXIT_FAILURE);
+        }
         n++;
     }
     return(EXIT_SUCCESS);
 }
-
-// int    *find_order_32(int nsyms, char *str, struct nlist *el, uint32_t magic)
-// {
-//     int     *itab;
-//     int     i;
-//     int     j;
-//     int     itmp;
-
-//     itab = (int *)malloc(nsyms * sizeof(int));
-//     i = 0;
-//     while (i < nsyms)
-//     {
-//         itab[i] = i;
-//         i++;
-//     }
-//     i = 0;
-//     while (i < nsyms)
-//     {
-//         j = i + 1;
-//         while (j < nsyms)
-//         {
-//             if (ft_strcmp((char *)(str + swap_endian(el[itab[i]].n_un.n_strx, magic)),
-//                 (char *)(str + swap_endian(el[itab[j]].n_un.n_strx, magic))) > 0 ||
-//                 ft_strcmp((char *)(str + swap_endian(el[itab[i]].n_un.n_strx, magic)),
-//                 (char *)(str + swap_endian(el[itab[j]].n_un.n_strx, magic))) == 0 &&
-//                 el[itab[i]].n_value > el[itab[j]].n_value)
-//             {
-//                 itmp = itab[i];
-//                 itab[i] = itab[j];
-//                 itab[j] = itmp;
-//             }  
-//             j++;
-//         }
-//         i++;
-//     }
-//     return (itab);
-// }
-
-
