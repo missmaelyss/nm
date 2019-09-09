@@ -1,6 +1,7 @@
 #ifndef NM_OTOOL_H
 # define NM_OTOOL_H
 
+# include <ar.h>
 # include <fcntl.h>
 # include <unistd.h>
 # include <stdio.h>
@@ -10,6 +11,12 @@
 # include <mach-o/loader.h>
 # include <mach-o/nlist.h>
 # include <mach-o/fat.h>
+
+char*   g_cpu_type_tab[18];
+char    g_section_symbol[30];
+
+void    fill_section_64(void *ptr, uint8_t ppc);
+void    fill_section_32(void *ptr, uint8_t ppc);
 
 void        nm(void *ptr, char *av, uint8_t mult);
 void        print_for_arch(cpu_type_t cputype);
@@ -26,6 +33,7 @@ void        print_output_32(struct symtab_command *sym, void *ptr, uint32_t magi
 void        print_symbol(uint8_t n_type, uint8_t n_sect, uint16_t n_desc, uint32_t type);
 void        print_value(uint64_t n_value, int size, uint32_t type);
 
+void        handle_lyb(void *ptr, char *av);
 void        handle_64(void *ptr, uint8_t ppc);
 void        handle_32(void *ptr, uint8_t ppc);
 void        handle_fat_64(void *ptr, char *av);
@@ -38,6 +46,7 @@ char        *ft_strdup(char *src);
 
 uint16_t    swap_endian_short(uint16_t value, uint32_t magic);
 uint32_t    swap_endian(uint32_t value, uint32_t magic);
+uint64_t    swap_endian_64(uint64_t value, uint32_t magic);
 int         nb_good_sym_64(int nsyms, struct nlist_64 *el, uint32_t magic);
 int         nb_good_sym_32(int nsyms, struct nlist *el, uint32_t magic);
 

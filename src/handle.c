@@ -1,5 +1,34 @@
 #include <nm_otool.h>
 
+void    handle_lyb(void *ptr, char *av)
+{
+    struct  ar_hdr *header;
+
+    header = (struct ar_hdr *)(ptr + 0x8);
+    
+    // printf("ptr : %x\n", ptr);
+
+    while (atoi(header->ar_size))
+    {
+        // printf("%x |%s| %d %x\n", (void *)(header->ar_name), header->ar_fmag, atoi(header->ar_size), (void *)(header->ar_fmag) + 2);
+        if (ft_strcmp(header->ar_fmag, "`\n__.SYMDEF SORTED") != 0 && ft_strcmp(header->ar_fmag, "`\n__.SYMDEF"))
+        {
+            write(1, "\n", 1);
+            write(1, av, ft_strlen(av));
+            write(1, "(", 1);
+            write(1, &((header->ar_fmag)[2]), ft_strlen(&((header->ar_fmag)[2])));
+            write(1, "):\n", 3);
+            // printf("size: %d %d\n", ft_strlen(&((header->ar_fmag)[2])) / 8 , ft_strlen(&((header->ar_fmag)[2])) % 8);
+            // printf("offset: %d\n", (ft_strlen(&((header->ar_fmag)[2])) / 8 + (ft_strlen(&((header->ar_fmag)[2])) % 8 > 0 ? 1 : 0)) * 0x8 + 0x4);
+            nm((void *)(header->ar_fmag) + 2 + (ft_strlen(&((header->ar_fmag)[2])) / 8 + (ft_strlen(&((header->ar_fmag)[2])) % 8 > 0 ? 1 : 0)) * 0x8 + 0x4, av, 1);
+        }
+        ptr = (void *)(header->ar_fmag) + 2 + atoi(header->ar_size);
+        if (OSSwapConstInt64(*(uint64_t *)ptr) == 0x213C617263683E0A)
+            break ;
+        header = (struct ar_hdr *)(ptr);
+    }
+}
+
 void    handle_64(void *ptr, uint8_t ppc)
 {
     uint32_t                ncmds;
@@ -7,7 +36,8 @@ void    handle_64(void *ptr, uint8_t ppc)
     struct mach_header_64   *header;
     struct load_command     *lc;
     struct symtab_command   *sym;
-
+    
+    fill_section_64(ptr, ppc);
     header = (struct mach_header_64 *)ptr;
     ncmds = header->ncmds;
     lc = ptr + sizeof(struct mach_header_64);
@@ -33,6 +63,7 @@ void    handle_32(void *ptr, uint8_t ppc)
     struct load_command     *lc;
     struct symtab_command   *sym;
 
+    fill_section_32(ptr, ppc);
     header = (struct mach_header *)ptr;
     ncmds = header->ncmds;
     lc = ptr + sizeof(struct mach_header);
@@ -64,12 +95,12 @@ void    handle_fat_64(void *ptr, char *av)
         write(1, "\n", 1);
         write(1, av, ft_strlen(av));
         if (OSSwapConstInt32(header->nfat_arch) > 1)
-            print_for_arch((OSSwapConstInt32(arch->cputype)));
+            print_for_arch((OSSwapConstInt64(arch->cputype)));
         write(1, "\n", 1);
-        if ((OSSwapConstInt32(arch->cputype) & CPU_ARCH_ABI64) == CPU_ARCH_ABI64)
-            handle_64(ptr + OSSwapConstInt32(arch->offset), (OSSwapConstInt32(arch->cputype) & CPU_TYPE_POWERPC) == CPU_TYPE_POWERPC);
+        if ((OSSwapConstInt64(arch->cputype) & CPU_ARCH_ABI64) == CPU_ARCH_ABI64)
+            handle_64(ptr + OSSwapConstInt64(arch->offset), (OSSwapConstInt64(arch->cputype) & CPU_TYPE_POWERPC) == CPU_TYPE_POWERPC);
         else
-            handle_32(ptr + OSSwapConstInt32(arch->offset), (OSSwapConstInt32(arch->cputype) & CPU_TYPE_POWERPC) == CPU_TYPE_POWERPC);
+            handle_32(ptr + OSSwapConstInt64(arch->offset), (OSSwapConstInt64(arch->cputype) & CPU_TYPE_POWERPC) == CPU_TYPE_POWERPC);
         i++;
         arch++;
     }
@@ -81,6 +112,8 @@ void    handle_fat_32(void *ptr, char *av)
     struct fat_header   *header;
     struct fat_arch     *arch;
 
+
+
     i = 0;
     header = (struct fat_header *)ptr;
     arch = ptr + sizeof(struct fat_header);
@@ -91,10 +124,21 @@ void    handle_fat_32(void *ptr, char *av)
         if (OSSwapConstInt32(header->nfat_arch) > 1)
             print_for_arch((OSSwapConstInt32(arch->cputype)));
         write(1, "\n", 1);
+        
         if ((OSSwapConstInt32(arch->cputype) & CPU_ARCH_ABI64) == CPU_ARCH_ABI64)
-            handle_64(ptr + OSSwapConstInt32(arch->offset), (OSSwapConstInt32(arch->cputype) & CPU_TYPE_POWERPC) == CPU_TYPE_POWERPC);
+        {
+            if (OSSwapConstInt64(*(uint64_t *)(ptr + OSSwapConstInt32(arch->offset))) == 0x213C617263683E0A || *(uint64_t *)(ptr + OSSwapConstInt32(arch->offset)) == 0x213C617263683E0A)
+                handle_lyb(ptr + OSSwapConstInt32(arch->offset), av);
+            else
+                handle_64(ptr + OSSwapConstInt32(arch->offset), (OSSwapConstInt32(arch->cputype) & CPU_TYPE_POWERPC) == CPU_TYPE_POWERPC);
+        }
         else
-            handle_32(ptr + OSSwapConstInt32(arch->offset), (OSSwapConstInt32(arch->cputype) & CPU_TYPE_POWERPC) == CPU_TYPE_POWERPC);
+        {
+            if (OSSwapConstInt64(*(uint64_t *)(ptr + OSSwapConstInt32(arch->offset))) == 0x213C617263683E0A || *(uint64_t *)(ptr + OSSwapConstInt32(arch->offset)) == 0x213C617263683E0A)
+                handle_lyb(ptr + OSSwapConstInt32(arch->offset), av);
+            else
+                handle_32(ptr + OSSwapConstInt32(arch->offset), (OSSwapConstInt32(arch->cputype) & CPU_TYPE_POWERPC) == CPU_TYPE_POWERPC);
+        }
         i++;
         arch++;
     }
