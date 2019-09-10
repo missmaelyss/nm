@@ -29,7 +29,8 @@ void    print_value(uint64_t n_value, int size, uint32_t n_type)
     int     n;
     char	alpha[16] = "0123456789abcdef";
 
-    str = (char *)malloc(sizeof(char) * (size + 1));
+    if (!(str = (char *)malloc(sizeof(char) * (size + 1))))
+        return (ft_error("malloc", "Error."));
     n = size - 1;
     str[size] = '\0';
     while (n >= 0)
@@ -41,9 +42,10 @@ void    print_value(uint64_t n_value, int size, uint32_t n_type)
         n--;
     }
     write(1, str, size);
+    free(str);
 }
 
-void    print_output_64(struct symtab_command *sym, void *ptr, uint32_t magic, uint8_t ppc)
+void    print_output_64(struct symtab_command *sym, struct s_file_ptr *ptr, uint32_t magic, uint8_t ppc)
 {
     int             i;
     int             *itab;
@@ -54,8 +56,13 @@ void    print_output_64(struct symtab_command *sym, void *ptr, uint32_t magic, u
     if (ppc)
         OSSwapConstInt32(magic);
     i = 0;
-    stringtable = ptr + swap_endian(sym->stroff, magic);
-    el = ptr + swap_endian(sym->symoff, magic);
+    stringtable = ptr->ptr + swap_endian(sym->stroff, magic);
+    el = ptr->ptr + swap_endian(sym->symoff, magic);
+    if ((void *)el > ptr->max_ptr)
+    {
+        printf("Error\n");
+        return ;
+    } 
     good_sym = nb_good_sym_64(swap_endian(sym->nsyms, magic), el, magic);
     itab = find_order_64(swap_endian(sym->nsyms, magic), stringtable, el, magic);
     while (i < good_sym)
@@ -72,9 +79,11 @@ void    print_output_64(struct symtab_command *sym, void *ptr, uint32_t magic, u
         }
         i++;
     }
+    if (itab)
+        free(itab);
 }
 
-void    print_output_32(struct symtab_command *sym, void *ptr, uint32_t magic, uint8_t ppc)
+void    print_output_32(struct symtab_command *sym, struct s_file_ptr *ptr, uint32_t magic, uint8_t ppc)
 {
     int             i;
     int             *itab;
@@ -85,8 +94,13 @@ void    print_output_32(struct symtab_command *sym, void *ptr, uint32_t magic, u
     if (ppc)
         OSSwapConstInt32(magic);
     i = 0;
-    stringtable = ptr + swap_endian(sym->stroff, magic);
-    el = ptr + swap_endian(sym->symoff, magic);
+    stringtable = ptr->ptr + swap_endian(sym->stroff, magic);
+    el = ptr->ptr + swap_endian(sym->symoff, magic);
+    if ((void *)el > ptr->max_ptr)
+    {
+        printf("Error\n");
+        return ;
+    } 
     good_sym = nb_good_sym_32(swap_endian(sym->nsyms, magic), el, magic);
     itab = find_order_32(swap_endian(sym->nsyms, magic), stringtable, el, magic);
     while (i < good_sym)
@@ -103,4 +117,6 @@ void    print_output_32(struct symtab_command *sym, void *ptr, uint32_t magic, u
         }
         i++;
     }
+    if (itab)
+        free(itab);
 }

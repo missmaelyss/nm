@@ -1,16 +1,17 @@
 #include <nm_otool.h>
 
-void    handle_lyb(void *ptr, char *av)
+void    handle_lyb(struct s_file_ptr *ptr, char *av)
 {
     struct  ar_hdr *header;
 
-    header = (struct ar_hdr *)(ptr + 0x8);
-    
-    // printf("ptr : %x\n", ptr);
-
+    header = (struct ar_hdr *)(ptr->ptr + 0x8);
     while (atoi(header->ar_size))
     {
-        // printf("%x |%s| %d %x\n", (void *)(header->ar_name), header->ar_fmag, atoi(header->ar_size), (void *)(header->ar_fmag) + 2);
+        if ((void *)header > ptr->max_ptr)
+        {
+            printf("Error\n");
+            return ;
+        }       
         if (ft_strcmp(header->ar_fmag, "`\n__.SYMDEF SORTED") != 0 && ft_strcmp(header->ar_fmag, "`\n__.SYMDEF"))
         {
             write(1, "\n", 1);
@@ -18,18 +19,16 @@ void    handle_lyb(void *ptr, char *av)
             write(1, "(", 1);
             write(1, &((header->ar_fmag)[2]), ft_strlen(&((header->ar_fmag)[2])));
             write(1, "):\n", 3);
-            // printf("size: %d %d\n", ft_strlen(&((header->ar_fmag)[2])) / 8 , ft_strlen(&((header->ar_fmag)[2])) % 8);
-            // printf("offset: %d\n", (ft_strlen(&((header->ar_fmag)[2])) / 8 + (ft_strlen(&((header->ar_fmag)[2])) % 8 > 0 ? 1 : 0)) * 0x8 + 0x4);
-            nm((void *)(header->ar_fmag) + 2 + (ft_strlen(&((header->ar_fmag)[2])) / 8 + (ft_strlen(&((header->ar_fmag)[2])) % 8 > 0 ? 1 : 0)) * 0x8 + 0x4, av, 1);
+            nm(&(struct s_file_ptr){(void *)(header->ar_fmag) + 2 + (ft_strlen(&((header->ar_fmag)[2])) / 8 + (ft_strlen(&((header->ar_fmag)[2])) % 8 > 0 ? 1 : 0)) * 0x8 + 0x4, ptr->max_ptr}, av, 1);
         }
-        ptr = (void *)(header->ar_fmag) + 2 + atoi(header->ar_size);
-        if (OSSwapConstInt64(*(uint64_t *)ptr) == 0x213C617263683E0A)
+        ptr->ptr = (void *)(header->ar_fmag) + 2 + atoi(header->ar_size);
+        if (OSSwapConstInt64(*(uint64_t *)(ptr->ptr)) == 0x213C617263683E0A)
             break ;
-        header = (struct ar_hdr *)(ptr);
+        header = (struct ar_hdr *)(ptr->ptr);
     }
 }
 
-void    handle_64(void *ptr, uint8_t ppc)
+void    handle_64(struct s_file_ptr *ptr, uint8_t ppc)
 {
     uint32_t                ncmds;
     uint32_t                i;
@@ -38,12 +37,17 @@ void    handle_64(void *ptr, uint8_t ppc)
     struct symtab_command   *sym;
     
     fill_section_64(ptr, ppc);
-    header = (struct mach_header_64 *)ptr;
+    header = (struct mach_header_64 *)(ptr->ptr);
     ncmds = header->ncmds;
-    lc = ptr + sizeof(struct mach_header_64);
+    lc = ptr->ptr + sizeof(struct mach_header_64);
     i = 0;
     while (i < swap_endian(ncmds, header->magic))
     {
+        if ((void *)lc > ptr->max_ptr)
+        {
+            printf("Error\n");
+            return ;
+        } 
         if (swap_endian(lc->cmd, header->magic) == LC_SYMTAB)
         {
             sym = (struct symtab_command *)lc;
@@ -55,7 +59,7 @@ void    handle_64(void *ptr, uint8_t ppc)
     }
 }
 
-void    handle_32(void *ptr, uint8_t ppc)
+void    handle_32(struct s_file_ptr *ptr, uint8_t ppc)
 {
     uint32_t                ncmds;
     uint32_t                i;
@@ -64,12 +68,17 @@ void    handle_32(void *ptr, uint8_t ppc)
     struct symtab_command   *sym;
 
     fill_section_32(ptr, ppc);
-    header = (struct mach_header *)ptr;
+    header = (struct mach_header *)(ptr->ptr);
     ncmds = header->ncmds;
-    lc = ptr + sizeof(struct mach_header);
+    lc = ptr->ptr + sizeof(struct mach_header);
     i = 0;
     while (i < swap_endian(ncmds, header->magic))
     {
+        if ((void *)lc > ptr->max_ptr)
+        {
+            printf("Error\n");
+            return ;
+        } 
         if (swap_endian(lc->cmd, header->magic) == LC_SYMTAB)
         {
             sym = (struct symtab_command *)lc;
@@ -81,17 +90,22 @@ void    handle_32(void *ptr, uint8_t ppc)
     }
 }
 
-void    handle_fat_64(void *ptr, char *av)
+void    handle_fat_64(struct s_file_ptr *ptr, char *av)
 {
     uint32_t            i;
     struct fat_header   *header;
     struct fat_arch_64     *arch;
 
     i = 0;
-    header = (struct fat_header *)ptr;
-    arch = ptr + sizeof(struct fat_header);
+    header = (struct fat_header *)(ptr->ptr);
+    arch = ptr->ptr + sizeof(struct fat_header);
     while (i < OSSwapConstInt32(header->nfat_arch))
     {
+        if ((void *)arch > ptr->max_ptr)
+        {
+            printf("Error\n");
+            return ;
+        } 
         write(1, "\n", 1);
         write(1, av, ft_strlen(av));
         if (OSSwapConstInt32(header->nfat_arch) > 1)
@@ -106,19 +120,22 @@ void    handle_fat_64(void *ptr, char *av)
     }
 }
 
-void    handle_fat_32(void *ptr, char *av)
+void    handle_fat_32(struct s_file_ptr *ptr, char *av)
 {
     uint32_t            i;
     struct fat_header   *header;
     struct fat_arch     *arch;
 
-
-
     i = 0;
-    header = (struct fat_header *)ptr;
-    arch = ptr + sizeof(struct fat_header);
+    header = (struct fat_header *)(ptr->ptr);
+    arch = ptr->ptr + sizeof(struct fat_header);
     while (i < OSSwapConstInt32(header->nfat_arch))
     {
+        if ((void *)arch > ptr->max_ptr)
+        {
+            printf("Error\n");
+            return ;
+        }
         write(1, "\n", 1);
         write(1, av, ft_strlen(av));
         if (OSSwapConstInt32(header->nfat_arch) > 1)
@@ -127,17 +144,17 @@ void    handle_fat_32(void *ptr, char *av)
         
         if ((OSSwapConstInt32(arch->cputype) & CPU_ARCH_ABI64) == CPU_ARCH_ABI64)
         {
-            if (OSSwapConstInt64(*(uint64_t *)(ptr + OSSwapConstInt32(arch->offset))) == 0x213C617263683E0A || *(uint64_t *)(ptr + OSSwapConstInt32(arch->offset)) == 0x213C617263683E0A)
-                handle_lyb(ptr + OSSwapConstInt32(arch->offset), av);
+            if (OSSwapConstInt64(*(uint64_t *)(ptr->ptr + OSSwapConstInt32(arch->offset))) == 0x213C617263683E0A || *(uint64_t *)(ptr->ptr + OSSwapConstInt32(arch->offset)) == 0x213C617263683E0A)
+                handle_lyb(&(struct s_file_ptr){ptr->ptr + OSSwapConstInt32(arch->offset), ptr->max_ptr}, av);
             else
-                handle_64(ptr + OSSwapConstInt32(arch->offset), (OSSwapConstInt32(arch->cputype) & CPU_TYPE_POWERPC) == CPU_TYPE_POWERPC);
+                handle_64(&(struct s_file_ptr){ptr->ptr + OSSwapConstInt32(arch->offset), ptr->max_ptr}, (OSSwapConstInt32(arch->cputype) & CPU_TYPE_POWERPC) == CPU_TYPE_POWERPC);
         }
         else
         {
-            if (OSSwapConstInt64(*(uint64_t *)(ptr + OSSwapConstInt32(arch->offset))) == 0x213C617263683E0A || *(uint64_t *)(ptr + OSSwapConstInt32(arch->offset)) == 0x213C617263683E0A)
-                handle_lyb(ptr + OSSwapConstInt32(arch->offset), av);
+            if (OSSwapConstInt64(*(uint64_t *)(ptr->ptr + OSSwapConstInt32(arch->offset))) == 0x213C617263683E0A || *(uint64_t *)(ptr->ptr + OSSwapConstInt32(arch->offset)) == 0x213C617263683E0A)
+                handle_lyb(&(struct s_file_ptr){ptr->ptr + OSSwapConstInt32(arch->offset), ptr->max_ptr}, av);
             else
-                handle_32(ptr + OSSwapConstInt32(arch->offset), (OSSwapConstInt32(arch->cputype) & CPU_TYPE_POWERPC) == CPU_TYPE_POWERPC);
+                handle_32(&(struct s_file_ptr){ptr->ptr + OSSwapConstInt32(arch->offset), ptr->max_ptr}, (OSSwapConstInt32(arch->cputype) & CPU_TYPE_POWERPC) == CPU_TYPE_POWERPC);
         }
         i++;
         arch++;

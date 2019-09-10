@@ -33,6 +33,8 @@ void quickSort_64(int *tableau, int debut, int fin, char *str, struct nlist_64 *
             swap_tab(tableau, gauche, droite);
         else break;
     }
+    if (pivot)
+        free(pivot);
     quickSort_64(tableau, debut, droite, str, el, magic);
     quickSort_64(tableau, droite+1, fin, str, el, magic);
 }
@@ -62,6 +64,8 @@ void quickSort_32(int *tableau, int debut, int fin, char *str, struct nlist *el,
             swap_tab(tableau, gauche, droite);
         else break;
     }
+    if (pivot)
+        free(pivot);
     quickSort_32(tableau, debut, droite, str, el, magic);
     quickSort_32(tableau, droite+1, fin, str, el, magic);
 }
@@ -73,7 +77,9 @@ int    *find_order_64(int nsyms, char *str, struct nlist_64 *el, uint32_t magic)
     int     good_sym;
 
     good_sym = nb_good_sym_64(nsyms, el, magic);
-    itab = (int *)malloc(good_sym * sizeof(int));
+    
+    if (!(itab = (int *)malloc(good_sym * sizeof(int))))
+        exit (-1);
     i = 0;
     good_sym = 0;
     while (i < nsyms)
@@ -96,7 +102,8 @@ int    *find_order_32(int nsyms, char *str, struct nlist *el, uint32_t magic)
     int     good_sym;
 
     good_sym = nb_good_sym_32(nsyms, el, magic);
-    itab = (int *)malloc(good_sym * sizeof(int));
+    if (!(itab = (int *)malloc(good_sym * sizeof(int))))
+        exit (-1);
     i = 0;
     good_sym = 0;
     while (i < nsyms)

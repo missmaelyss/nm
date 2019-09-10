@@ -25,7 +25,7 @@ void    print_path(char *av)
     write(1, ":\n", 2);
 }
 
-void    fill_section_32(void *ptr, uint8_t ppc)
+void    fill_section_32(struct s_file_ptr *ptr, uint8_t ppc)
 {
     uint32_t                ncmds;
     uint32_t                i;
@@ -33,13 +33,18 @@ void    fill_section_32(void *ptr, uint8_t ppc)
     struct load_command     *lc;
     int                     i_tab;
 
-    header = (struct mach_header *)ptr;
+    header = (struct mach_header *)(ptr->ptr);
     ncmds = header->ncmds;
-    lc = ptr + sizeof(struct mach_header);
+    lc = (ptr->ptr) + sizeof(struct mach_header);
     i = 0;
     i_tab = 0;
     while (i < swap_endian(ncmds, header->magic))
     {
+        if ((void *)lc > ptr->max_ptr)
+        {
+            printf("Error\n");
+            return ;
+        }
         if (swap_endian(lc->cmd, header->magic) == LC_SEGMENT)
         {
         
@@ -49,12 +54,14 @@ void    fill_section_32(void *ptr, uint8_t ppc)
 
             seg = (void *)lc;
             n = 0;
-            // printf("#%d: LC_SEGMENT-%s\n", i, seg->segname);
             sect = (void *)seg + sizeof(struct segment_command);
-            
+            if ((void *)sect > ptr->max_ptr)
+            {
+                printf("Error\n");
+                return ;
+            } 
             while (n < swap_endian(seg->nsects, header->magic))
             {
-                // printf("\t#%d: %s\n", n, sect->sectname);
                 if (ft_strcmp(sect->sectname,"__text") == 0)
                 {
                     g_section_symbol[i_tab] = 't';
@@ -70,11 +77,6 @@ void    fill_section_32(void *ptr, uint8_t ppc)
                     g_section_symbol[i_tab] = 'b';
                     i_tab++;
                 }
-                // else if (ft_strcmp(sect->sectname,"__common") == 0)
-                // {
-                //     g_section_symbol[i_tab] = 'c';
-                //     i_tab++;
-                // }
                 else
                 {
                     g_section_symbol[i_tab] = 's';
@@ -87,18 +89,10 @@ void    fill_section_32(void *ptr, uint8_t ppc)
         lc = (void *)lc + swap_endian(lc->cmdsize, header->magic);
         i++;
     }
-
-    // int n;
-    // n = 0;
-    // while (n < ft_strlen(g_section_symbol))
-    // {
-    //     printf("%d: %c\n", n, g_section_symbol[n]);
-    //     n++;
-    // }
 }
 
 
-void    fill_section_64(void *ptr, uint8_t ppc)
+void    fill_section_64(struct s_file_ptr *ptr, uint8_t ppc)
 {
     uint32_t                ncmds;
     uint32_t                i;
@@ -106,13 +100,18 @@ void    fill_section_64(void *ptr, uint8_t ppc)
     struct load_command     *lc;
     int                     i_tab;
 
-    header = (struct mach_header_64 *)ptr;
+    header = (struct mach_header_64 *)(ptr->ptr);
     ncmds = header->ncmds;
-    lc = ptr + sizeof(struct mach_header_64);
+    lc = (ptr->ptr) + sizeof(struct mach_header_64);
     i = 0;
     i_tab = 0;
     while (i < swap_endian(ncmds, header->magic))
     {
+        if ((void *)lc > ptr->max_ptr)
+        {
+            printf("Error\n");
+            return ;
+        }
         if (swap_endian(lc->cmd, header->magic) == LC_SEGMENT_64)
         {
         
@@ -122,12 +121,15 @@ void    fill_section_64(void *ptr, uint8_t ppc)
 
             seg = (void *)lc;
             n = 0;
-            // printf("#%d: LC_SEGMENT-%s\n", i, seg->segname);
             sect = (void *)seg + sizeof(struct segment_command_64);
             
             while (n < seg->nsects)
             {
-                // printf("\t#%d: %s\n", n, sect->sectname);
+                if ((void *)sect > ptr->max_ptr)
+                {
+                    printf("Error\n");
+                    return ;
+                }   
                 if (ft_strcmp(sect->sectname,"__text") == 0)
                 {
                     g_section_symbol[i_tab] = 't';
@@ -143,11 +145,6 @@ void    fill_section_64(void *ptr, uint8_t ppc)
                     g_section_symbol[i_tab] = 'b';
                     i_tab++;
                 }
-                // else if (ft_strcmp(sect->sectname,"__common") == 0)
-                // {
-                //     g_section_symbol[i_tab] = 'c';
-                //     i_tab++;
-                // }
                 else
                 {
                     g_section_symbol[i_tab] = 's';
@@ -160,35 +157,26 @@ void    fill_section_64(void *ptr, uint8_t ppc)
         lc = (void *)lc + swap_endian(lc->cmdsize, header->magic);
         i++;
     }
-
-    // int n;
-    // n = 0;
-    // while (n < 30)
-    // {
-    //     printf("%d: %c\n", n, g_section_symbol[n]);
-    //     n++;
-    // }
 }
 
-void    nm(void *ptr, char *av, uint8_t mult)
+void    nm(struct s_file_ptr *ptr, char *av, uint8_t mult)
 {
     uint32_t    magic_number;
     cpu_type_t  cputype;
     uint32_t    filetype;
 
-    magic_number = *(uint32_t *)ptr;
-    cputype = (cpu_type_t)(ptr + sizeof(uint32_t));
-    filetype = *(uint32_t *)(ptr + sizeof(uint32_t) + sizeof(cpu_type_t) + sizeof(cpu_subtype_t));
+    magic_number = *(uint32_t *)(ptr->ptr);
+    cputype = (cpu_type_t)((ptr->ptr) + sizeof(uint32_t));
+    filetype = *(uint32_t *)((ptr->ptr) + sizeof(uint32_t) + sizeof(cpu_type_t) + sizeof(cpu_subtype_t));
 
-    // printf("Debut de nm, ptr: %x\n", ptr);
-    if (OSSwapConstInt64(*(uint64_t *)ptr) == 0x213C617263683E0A || *(uint64_t *)ptr == 0x213C617263683E0A)
+    if (OSSwapConstInt64(*(uint64_t *)(ptr->ptr)) == 0x213C617263683E0A || *(uint64_t *)(ptr->ptr) == 0x213C617263683E0A)
     {
         handle_lyb(ptr, av);
         return ;
     }
     filetype = ((magic_number == MH_CIGAM || magic_number == MH_CIGAM_64) ? OSSwapConstInt32(filetype) : filetype);
     if (!(filetype == 0x0 || filetype == 0x1 || filetype ==  0x2 || filetype == 0x6 || filetype == 0x3000080 || filetype == 0x3000000))
-        return ;
+        return (ft_error(av, "The file was not recognized as a valid object file\n"));
     if (mult > 2 && magic_number != FAT_MAGIC && magic_number != FAT_MAGIC_64 && magic_number != FAT_CIGAM && magic_number != FAT_CIGAM_64)
         print_path(av);
     if (magic_number == MH_MAGIC_64 || magic_number == MH_CIGAM_64)
@@ -203,12 +191,20 @@ void    nm(void *ptr, char *av, uint8_t mult)
 
 }
 
+void    ft_error(char *av, char *error)
+{
+    write(2, av, ft_strlen(av));
+    write(2, ": ", 2);
+    write(2, error, ft_strlen(error));
+    write(2, "\n", 1);
+}
+
 int main(int ac, char **av)
 {
-    int         fd;
-    void        *ptr;
-    struct stat buf;
-    int         n;
+    int                 fd;
+    int                 n;
+    struct stat         buf;
+    struct s_file_ptr   ptr;
 
     n = 0;
     if (ac < 2)
@@ -217,52 +213,29 @@ int main(int ac, char **av)
     {
         if ((fd = open(av[n], O_RDONLY)) < 0)
         {
-            perror("open");
-            n++;
+            ft_error(av[n], "Permission denied.");
             continue;
-            // return (EXIT_FAILURE);
         }
         if (fstat(fd, &buf) < 0)
         {
-            perror("fstat");
-            if (close(fd) < 0)
-            {
-                perror("close");
-                return (EXIT_FAILURE);
-            }
+            ft_error(av[n], "Permission denied.");
+            close(fd);
             continue;
-            // return (EXIT_FAILURE);
         }
-        if ((ptr = mmap(0, buf.st_size, PROT_READ, MAP_PRIVATE, fd, 0)) == MAP_FAILED)
+        if ((ptr.ptr = mmap(0, buf.st_size, PROT_READ, MAP_PRIVATE, fd, 0)) == MAP_FAILED)
         {
-            perror("mmap");
-            if (close(fd) < 0)
-            {
-                perror("close");
-                return (EXIT_FAILURE);
-            }
+            ft_error(av[n], "Is a directory.");
+            close(fd);
             continue;
-            // return (EXIT_FAILURE);
         }
-        nm(ptr, av[n], ac);
-        if (munmap(ptr, buf.st_size) < 0)
+        ptr.max_ptr = ptr.ptr + buf.st_size;
+        nm(&ptr, av[n], ac);
+        if (munmap(ptr.ptr, buf.st_size) < 0)
         {
-            perror("munmap");
-            if (close(fd) < 0)
-            {
-                perror("close");
-                return (EXIT_FAILURE);
-            }
+            close(fd);
             continue;
-            // return (EXIT_FAILURE);
         }
-        if (close(fd) < 0)
-        {
-            perror("close");
-            // continue;
-            return (EXIT_FAILURE);
-        }
-        // n++;
+        close(fd);
     }
-    return(EXIT_SUCCESS);
+    return (EXIT_SUCCESS);
 }
