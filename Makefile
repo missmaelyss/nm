@@ -8,12 +8,16 @@ FLAGS =  -g
 
 INC = -I include
 
-SRC_NAME_NM =	handle.c \
+SRC_NAME_NM =	fill_section.c \
+				find_order.c \
+				handle.c \
 				nm.c \
+				print.c \
 				print_output.c \
 				quick_sort.c \
 				tools.c \
-				tools2.c
+				tools2.c \
+				tools3.c
 
 SRC_NAME_OTOOL =
 
