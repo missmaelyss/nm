@@ -56,7 +56,7 @@ void	nm(struct s_file_ptr *ptr, char *av, uint8_t mult)
 		return (ft_error(av, "The file is not a valid object file\n"));
 	if (mult > 2 && magic_number != FAT_MAGIC && magic_number != FAT_MAGIC_64
 			&& magic_number != FAT_CIGAM && magic_number != FAT_CIGAM_64)
-		print_path(av);
+		print_path(av, 1);
 	pick_h(magic_number, ptr, cputype, av);
 }
 

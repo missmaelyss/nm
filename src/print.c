@@ -74,9 +74,10 @@ void	print_for_arch(cpu_type_t cputype)
 	write(1, "):", 2);
 }
 
-void	print_path(char *av)
+void	print_path(char *av, uint8_t nm)
 {
-	write(1, "\n", 1);
+	if (nm)
+		write(1, "\n", 1);
 	write(1, av, ft_strlen(av));
 	write(1, ":\n", 2);
 }

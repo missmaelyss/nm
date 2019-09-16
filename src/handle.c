@@ -27,7 +27,7 @@ void		handle_lyb(struct s_file_ptr *ptr, char *av)
 		if (ft_strcmp(h->ar_fmag, "`\n__.SYMDEF SORTED") != 0
 				&& ft_strcmp(h->ar_fmag, "`\n__.SYMDEF"))
 		{
-			print_lyb(av, h);
+			print_lyb(av, h, 1);
 			nm(&(struct s_file_ptr){(void *)(h->ar_fmag) + 2 + (ft_strlen(&((h->
 			ar_fmag)[2])) / 8 + (ft_strlen(&((h->ar_fmag)[2])) % 8 > 0 ? 1 : 0))
 			* 0x8 + 0x4, ptr->max}, av, 1);
@@ -55,7 +55,8 @@ void		handle_64(struct s_file_ptr *ptr, uint8_t ppc)
 	while (i < swap_endian(ncmds, header->magic))
 	{
 		if ((void *)lc > ptr->max)
-			return (ft_error("ft_nm", "Error\n"));
+			return ;
+			// return (ft_error("ft_nm", "Error\n"));
 		if (swap_endian(lc->cmd, header->magic) == LC_SYMTAB)
 		{
 			sym = (struct symtab_command *)lc;
@@ -83,7 +84,8 @@ void		handle_32(struct s_file_ptr *ptr, uint8_t ppc)
 	while (i < swap_endian(ncmds, header->magic))
 	{
 		if ((void *)lc > ptr->max)
-			return (ft_error("ft_nm", "Error\n"));
+			return ;
+			// return (ft_error("ft_nm", "Error\n"));
 		if (swap_endian(lc->cmd, header->magic) == LC_SYMTAB)
 		{
 			sym = (struct symtab_command *)lc;

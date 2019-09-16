@@ -77,7 +77,7 @@ void			pick_h(uint32_t mg, struct s_file_ptr *ptr, cpu_type_t c,
 	char *av);
 
 void			print_for_arch(cpu_type_t cputype);
-void			print_path(char *av);
+void			print_path(char *av, uint8_t nm);
 void			print_symbol(uint8_t n_type, uint8_t n_sect, uint16_t n_desc,
 	uint32_t type);
 void			print_value(uint64_t n_value, int size, uint32_t n_type);
@@ -114,8 +114,16 @@ int				print_fat_32(struct s_file_ptr *ptr, char *av,
 	struct fat_header *header, struct fat_arch *arch);
 int				print_fat_64(struct s_file_ptr *ptr, char *av,
 	struct fat_header *header, struct fat_arch_64 *arch);
-void			print_lyb(char *av, struct ar_hdr *h);
+void			print_lyb(char *av, struct ar_hdr *h, uint8_t nm);
 uint32_t		si32(uint32_t nb);
 uint64_t		si64(uint64_t nb);
+
+void		otool(struct s_file_ptr *ptr, char *av, uint8_t mult);
+
+void			handle_32_otool(struct s_file_ptr *ptr, uint8_t ppc, char *av);
+void			handle_64_otool(struct s_file_ptr *ptr, uint8_t ppc, char *av);
+void			handle_fat_32_otool(struct s_file_ptr *p, char *av, uint64_t s);
+void			handle_fat_64_otool(struct s_file_ptr *p, char *av, uint64_t s);
+void			handle_lyb_otool(struct s_file_ptr *ptr, char *av);
 
 #endif

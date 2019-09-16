@@ -50,7 +50,7 @@ void	section_32(struct load_command *lc, t_file_ptr *ptr,
 	{
 		if ((void *)sect > ptr->max)
 		{
-			printf("Error\n");
+			// printf("Error\n");
 			return ;
 		}
 		modify_sec_sym(sect->sectname, i_tab);
@@ -69,7 +69,7 @@ void	section_64(struct load_command *lc, t_file_ptr *ptr,
 	seg = (void *)lc;
 	n = 0;
 	sect = (void *)seg + sizeof(struct segment_command_64);
-	while (n < seg->nsects)
+	while (n < swap_endian(seg->nsects, header->magic))
 	{
 		if ((void *)sect > ptr->max)
 		{
