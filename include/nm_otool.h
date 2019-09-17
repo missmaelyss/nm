@@ -118,12 +118,27 @@ void			print_lyb(char *av, struct ar_hdr *h, uint8_t nm);
 uint32_t		si32(uint32_t nb);
 uint64_t		si64(uint64_t nb);
 
-void		otool(struct s_file_ptr *ptr, char *av, uint8_t mult);
-
 void			handle_32_otool(struct s_file_ptr *ptr, uint8_t ppc, char *av);
 void			handle_64_otool(struct s_file_ptr *ptr, uint8_t ppc, char *av);
 void			handle_fat_32_otool(struct s_file_ptr *p, char *av, uint64_t s);
 void			handle_fat_64_otool(struct s_file_ptr *p, char *av, uint64_t s);
 void			handle_lyb_otool(struct s_file_ptr *ptr, char *av);
+
+void			pick_h_otool(uint32_t mg, struct s_file_ptr *ptr,
+	cpu_type_t c, char *av);
+void			otool(struct s_file_ptr *ptr, char *av, uint8_t mult);
+
+int				find_hexa(uint8_t nb, cpu_type_t cputype, int n, char *buffer);
+void			find_value(uint64_t n_value, int s, uint32_t n_type, char *b);
+void			value(uint64_t n_value, char *buffer, int *i_b, int size);
+void			print_32_otool(struct section *sect, t_file_ptr *ptr,
+		struct mach_header *h);
+void			print_64_otool(struct section_64 *sect, t_file_ptr *ptr,
+		struct mach_header_64 *h);
+
+void			section_64_otool(struct load_command *lc, t_file_ptr *ptr,
+		struct mach_header_64 *header);
+void			section_32_otool(struct load_command *lc, t_file_ptr *ptr,
+		struct mach_header *header);
 
 #endif

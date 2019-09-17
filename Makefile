@@ -19,13 +19,14 @@ SRC_NAME_NM =	fill_section.c \
 				tools2.c \
 				tools3.c
 
-SRC_NAME_OTOOL =	otool.c \
+SRC_NAME_OTOOL =	handle_otool.c \
+					otool.c \
+					print_otool.c \
 					print.c \
+					section_otool.c \
 					tools.c \
 					tools2.c \
-					tools3.c \
-					find_text.c \
-					handle_otool.c
+					tools3.c
 
 OBJ_PATH = obj/
 

@@ -49,10 +49,7 @@ void	section_32(struct load_command *lc, t_file_ptr *ptr,
 	while (n < swap_endian(seg->nsects, header->magic))
 	{
 		if ((void *)sect > ptr->max)
-		{
-			// printf("Error\n");
 			return ;
-		}
 		modify_sec_sym(sect->sectname, i_tab);
 		n++;
 		sect++;
@@ -72,10 +69,7 @@ void	section_64(struct load_command *lc, t_file_ptr *ptr,
 	while (n < swap_endian(seg->nsects, header->magic))
 	{
 		if ((void *)sect > ptr->max)
-		{
-			printf("Error\n");
 			return ;
-		}
 		modify_sec_sym(sect->sectname, i_tab);
 		n++;
 		sect++;
@@ -98,10 +92,7 @@ void	fill_section_32(struct s_file_ptr *ptr, uint8_t ppc)
 	while (i < swap_endian(ncmds, header->magic))
 	{
 		if ((void *)lc > ptr->max)
-		{
-			printf("Error\n");
 			return ;
-		}
 		if (swap_endian(lc->cmd, header->magic) == LC_SEGMENT)
 			section_32(lc, ptr, header, &i_tab);
 		lc = (void *)lc + swap_endian(lc->cmdsize, header->magic);
@@ -125,10 +116,7 @@ void	fill_section_64(struct s_file_ptr *ptr, uint8_t ppc)
 	while (i < swap_endian(ncmds, header->magic))
 	{
 		if ((void *)lc > ptr->max)
-		{
-			printf("Error\n");
 			return ;
-		}
 		if (swap_endian(lc->cmd, header->magic) == LC_SEGMENT_64)
 			section_64(lc, ptr, header, &i_tab);
 		lc = (void *)lc + swap_endian(lc->cmdsize, header->magic);

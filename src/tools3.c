@@ -30,7 +30,6 @@ int			print_fat_64(struct s_file_ptr *ptr, char *av,
 		ft_error("ft_nm", "Error\n");
 		return (0);
 	}
-	// write(1, "\n", 1);
 	write(1, av, ft_strlen(av));
 	if (OSSwapConstInt32(header->nfat_arch) > 1)
 		print_for_arch((OSSwapConstInt64(arch->cputype)));
@@ -46,7 +45,6 @@ int			print_fat_32(struct s_file_ptr *ptr, char *av,
 		ft_error("ft_nm", "Error\n");
 		return (0);
 	}
-	// write(1, "\n", 1);
 	write(1, av, ft_strlen(av));
 	if (OSSwapConstInt32(header->nfat_arch) > 1)
 		print_for_arch((OSSwapConstInt32(arch->cputype)));

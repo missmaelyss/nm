@@ -20,10 +20,7 @@ void		handle_lyb(struct s_file_ptr *ptr, char *av)
 	while (atoi(h->ar_size))
 	{
 		if ((void *)h > ptr->max)
-		{
-			printf("Error\n");
 			return ;
-		}
 		if (ft_strcmp(h->ar_fmag, "`\n__.SYMDEF SORTED") != 0
 				&& ft_strcmp(h->ar_fmag, "`\n__.SYMDEF"))
 		{
@@ -56,7 +53,6 @@ void		handle_64(struct s_file_ptr *ptr, uint8_t ppc)
 	{
 		if ((void *)lc > ptr->max)
 			return ;
-			// return (ft_error("ft_nm", "Error\n"));
 		if (swap_endian(lc->cmd, header->magic) == LC_SYMTAB)
 		{
 			sym = (struct symtab_command *)lc;
@@ -85,7 +81,6 @@ void		handle_32(struct s_file_ptr *ptr, uint8_t ppc)
 	{
 		if ((void *)lc > ptr->max)
 			return ;
-			// return (ft_error("ft_nm", "Error\n"));
 		if (swap_endian(lc->cmd, header->magic) == LC_SYMTAB)
 		{
 			sym = (struct symtab_command *)lc;
@@ -110,6 +105,7 @@ void		handle_fat_64(struct s_file_ptr *p, char *av, uint64_t s)
 	{
 		if (!print_fat_64(p, av, header, arch))
 			return ;
+		write(1, "\n", 1);
 		if (si64(*(uint64_t *)(p->ptr + si32(arch->offset))) == s
 		|| *(uint64_t *)(p->ptr + si32(arch->offset)) == s)
 			handle_lyb(&(t_file_ptr){p->ptr + si32(arch->offset), p->max}, av);
@@ -137,6 +133,7 @@ void		handle_fat_32(struct s_file_ptr *p, char *av, uint64_t s)
 	{
 		if (!print_fat_32(p, av, header, arch))
 			return ;
+		write(1, "\n", 1);
 		if (si64(*(uint64_t *)(p->ptr + si32(arch->offset))) == s
 		|| *(uint64_t *)(p->ptr + si32(arch->offset)) == s)
 			handle_lyb(&(t_file_ptr){p->ptr + si32(arch->offset), p->max}, av);

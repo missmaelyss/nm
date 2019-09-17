@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   otool.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: marnaud <marvin@42.fr>                     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2019/09/17 14:58:08 by marnaud           #+#    #+#             */
+/*   Updated: 2019/09/17 14:59:38 by marnaud          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include <nm_otool.h>
 
 char	*g_cpu_type_tab[18] =
@@ -6,7 +18,8 @@ char	*g_cpu_type_tab[18] =
 	"mc88000", "sparc", "i860", "", "", "ppc"
 };
 
-void	pick_h_otool(uint32_t mg, struct s_file_ptr *ptr, cpu_type_t c, char *av)
+void	pick_h_otool(uint32_t mg, struct s_file_ptr *ptr,
+		cpu_type_t c, char *av)
 {
 	if (mg == MH_MAGIC_64 || mg == MH_CIGAM_64)
 		handle_64_otool(ptr, (OSSwapConstInt32(c)
@@ -24,7 +37,7 @@ void	otool(struct s_file_ptr *ptr, char *av, uint8_t mult)
 {
 	uint32_t	mg;
 	cpu_type_t	cputype;
-	
+
 	mg = *(uint32_t *)(ptr->ptr);
 	cputype = (cpu_type_t)((ptr->ptr) + sizeof(uint32_t));
 	if (OSSwapConstInt64(*(uint64_t *)(ptr->ptr)) == 0x213C617263683E0A
@@ -32,7 +45,8 @@ void	otool(struct s_file_ptr *ptr, char *av, uint8_t mult)
 		handle_lyb_otool(ptr, av);
 	else
 	{
-		if (mult && !(mg == FAT_MAGIC || mg == FAT_CIGAM || mg == FAT_MAGIC_64 || mg == FAT_CIGAM_64))
+		if (mult && !(mg == FAT_MAGIC || mg == FAT_CIGAM
+			|| mg == FAT_MAGIC_64 || mg == FAT_CIGAM_64))
 			print_path(av, 0);
 		pick_h_otool(mg, ptr, cputype, av);
 	}
@@ -82,7 +96,6 @@ int		main(int ac, char **av)
 	while (++n < ac)
 	{
 		if (!check_file(&fd, av[n], &ptr, &buf))
-			// return (EXIT_FAILURE);
 			continue;
 		ptr.max = ptr.ptr + buf.st_size;
 		otool(&ptr, av[n], ac);
