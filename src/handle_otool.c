@@ -32,7 +32,7 @@ void		handle_lyb_otool(struct s_file_ptr *ptr, char *av)
 				h->ar_fmag)[2])) / 8 + (ft_strlen(&((h->ar_fmag)[2])) % 8 > 0 ?
 					1 : 0)) * 0x8 + 0x4, ptr->max}, av, 0);
 		}
-		ptr->ptr = (void *)(h->ar_fmag) + 2 + atoi(h->ar_size);
+		ptr->ptr = (void *)(h->ar_fmag) + 2 + ft_atoi(h->ar_size);
 		if (OSSwapConstInt64(*(uint64_t *)(ptr->ptr)) == 0x213C617263683E0A)
 			break ;
 		h = (struct ar_hdr *)(ptr->ptr);

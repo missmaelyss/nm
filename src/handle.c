@@ -30,9 +30,11 @@ void		handle_lyb(struct s_file_ptr *ptr, char *av)
 			* 0x8 + 0x4, ptr->max}, av, 1);
 		}
 		ptr->ptr = (void *)(h->ar_fmag) + 2 + atoi(h->ar_size);
+		h = (struct ar_hdr *)(ptr->ptr);
+		if ((void *)h > ptr->max)
+			return ;
 		if (OSSwapConstInt64(*(uint64_t *)(ptr->ptr)) == 0x213C617263683E0A)
 			break ;
-		h = (struct ar_hdr *)(ptr->ptr);
 	}
 }
 
@@ -103,9 +105,9 @@ void		handle_fat_64(struct s_file_ptr *p, char *av, uint64_t s)
 	arch = p->ptr + sizeof(struct fat_header);
 	while (i < si32(header->nfat_arch))
 	{
+		write(1, "\n", 1);
 		if (!print_fat_64(p, av, header, arch))
 			return ;
-		write(1, "\n", 1);
 		if (si64(*(uint64_t *)(p->ptr + si32(arch->offset))) == s
 		|| *(uint64_t *)(p->ptr + si32(arch->offset)) == s)
 			handle_lyb(&(t_file_ptr){p->ptr + si32(arch->offset), p->max}, av);
@@ -131,9 +133,9 @@ void		handle_fat_32(struct s_file_ptr *p, char *av, uint64_t s)
 	arch = p->ptr + sizeof(struct fat_header);
 	while (i < si32(header->nfat_arch))
 	{
+		write(1, "\n", 1);
 		if (!print_fat_32(p, av, header, arch))
 			return ;
-		write(1, "\n", 1);
 		if (si64(*(uint64_t *)(p->ptr + si32(arch->offset))) == s
 		|| *(uint64_t *)(p->ptr + si32(arch->offset)) == s)
 			handle_lyb(&(t_file_ptr){p->ptr + si32(arch->offset), p->max}, av);

@@ -4,7 +4,7 @@ NAME_OTOOL = ft_otool
 
 CC = gcc
 
-FLAGS =  -g
+FLAGS = -g 
 
 INC = -I include
 
@@ -51,7 +51,7 @@ $(NAME_NM): $(OBJ_PATH) $(OBJ_NM)
 	@echo "\x1b[32;01m$@ SUCCESSFULLY CREATED !\x1b[32;00m"
 
 $(NAME_OTOOL): $(OBJ_PATH) $(OBJ_OTOOL)
-	$(CC) $(OBJ_OTOOL) -o $(NAME_OTOOL)
+	$(CC) $(OBJ_OTOOL) -o $(NAME_OTOOL) 
 	@echo "\x1b[32;01m$@ SUCCESSFULLY CREATED !\x1b[32;00m"
 
 $(OBJ_PATH):

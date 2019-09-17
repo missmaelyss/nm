@@ -12,52 +12,52 @@
 
 #include <nm_otool.h>
 
-int		*find_order_64(int nsyms, char *str,
-	struct nlist_64 *el, uint32_t magic)
+int		*find_order_64(struct symtab_command *sym, char *str,
+	struct nlist_64 *el, uint32_t m)
 {
 	int		*itab;
 	int		i;
 	int		good_sym;
 
-	good_sym = nb_good_sym_64(nsyms, el, magic);
+	good_sym = nb_good_sym_64(sym, el, m, NULL);
 	if (!(itab = (int *)malloc(good_sym * sizeof(int))))
-		exit(-1);
+		return (0);
 	i = 0;
 	good_sym = 0;
-	while (i < nsyms)
+	while (i < swap_endian(sym->nsyms, m))
 	{
-		if (!(swap_endian(el[i].n_type, magic) & N_STAB))
+		if (!(swap_endian(el[i].n_type, m) & N_STAB))
 		{
 			itab[good_sym] = i;
 			good_sym++;
 		}
 		i++;
 	}
-	quicksort_64(&(struct s_quick){0, good_sym - 1, itab, str, magic}, el);
+	quicksort_64(&(struct s_quick){0, good_sym - 1, itab, str, m}, el);
 	return (itab);
 }
 
-int		*find_order_32(int nsyms, char *str,
-	struct nlist *el, uint32_t magic)
+int		*find_order_32(struct symtab_command *sym, char *str,
+	struct nlist *el, uint32_t m)
 {
 	int		*itab;
 	int		i;
 	int		good_sym;
 
-	good_sym = nb_good_sym_32(nsyms, el, magic);
+	good_sym = nb_good_sym_32(sym, el, m, NULL);
 	if (!(itab = (int *)malloc(good_sym * sizeof(int))))
-		exit(-1);
+		return (0);
 	i = 0;
 	good_sym = 0;
-	while (i < nsyms)
+	while (i < swap_endian(sym->nsyms, m))
 	{
-		if (!(swap_endian(el[i].n_type, magic) & N_STAB))
+		if (!(swap_endian(el[i].n_type, m) & N_STAB))
 		{
 			itab[good_sym] = i;
 			good_sym++;
 		}
 		i++;
 	}
-	quicksort_32(&(struct s_quick){0, good_sym - 1, itab, str, magic}, el);
+	quicksort_32(&(struct s_quick){0, good_sym - 1, itab, str, m}, el);
 	return (itab);
 }

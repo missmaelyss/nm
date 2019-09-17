@@ -33,7 +33,7 @@ int		ft_strlen(char *str)
 	int n;
 
 	n = 0;
-	while (str[n] != 0)
+	while (str && str[n] != 0)
 		n++;
 	return (n);
 }
@@ -68,4 +68,32 @@ char	*ft_strdup(char *src)
 	}
 	dest[n] = 0;
 	return (dest);
+}
+
+int		ft_atoi(const char *str)
+{
+	int n;
+	int s;
+	int sto;
+
+	n = 0;
+	s = 1;
+	sto = 0;
+	while (str && (str[n] == ' ' || str[n] == '\t' || str[n] == '\n'
+			|| str[n] == '\v' || str[n] == '\f' || str[n] == '\r'))
+		n++;
+	if (str && str[n] == '-')
+	{
+		s = -1;
+		n++;
+	}
+	if (str && str[n] == '+' && s == 1)
+		n++;
+	while (str && str[n] >= '0' && str[n] <= '9')
+	{
+		sto = sto * 10;
+		sto = sto + str[n] - 48;
+		n++;
+	}
+	return (sto * s);
 }

@@ -40,7 +40,7 @@ int			print_fat_64(struct s_file_ptr *ptr, char *av,
 int			print_fat_32(struct s_file_ptr *ptr, char *av,
 	struct fat_header *header, struct fat_arch *arch)
 {
-	if ((void *)arch > ptr->max)
+	if ((void *)arch > ptr->max || ptr->ptr + si32(arch->offset) > ptr->max)
 	{
 		ft_error("ft_nm", "Error\n");
 		return (0);

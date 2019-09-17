@@ -52,8 +52,9 @@ void	print_output_64(struct symtab_command *sym,
 	el = ptr->ptr + swap_endian(sym->symoff, m);
 	if ((void *)el > ptr->max)
 		return (ft_error("ft_nm", "Error\n"));
-	good_sym = nb_good_sym_64(swap_endian(sym->nsyms, m), el, m);
-	itab = find_order_64(swap_endian(sym->nsyms, m), stringtable, el, m);
+	if ((good_sym = nb_good_sym_64(sym, el, m, ptr)) == -1)
+		return (ft_error("ft_nm", "Error\n"));
+	itab = find_order_64(sym, stringtable, el, m);
 	while (i < good_sym)
 	{
 		if (!(swap_endian(el[itab[i]].n_type, m) & N_STAB))
@@ -80,8 +81,9 @@ void	print_output_32(struct symtab_command *sym,
 	el = ptr->ptr + swap_endian(sym->symoff, m);
 	if ((void *)el > ptr->max)
 		return (ft_error("ft_nm", "Error\n"));
-	good_sym = nb_good_sym_32(swap_endian(sym->nsyms, m), el, m);
-	itab = find_order_32(swap_endian(sym->nsyms, m), stringtable, el, m);
+	if ((good_sym = nb_good_sym_32(sym, el, m, ptr)) == -1)
+		return (ft_error("ft_nm", "Error\n"));
+	itab = find_order_32(sym, stringtable, el, m);
 	while (i < good_sym)
 	{
 		if (!(swap_endian(el[itab[i]].n_type, m) & N_STAB))
