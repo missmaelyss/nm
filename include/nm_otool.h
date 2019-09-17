@@ -58,10 +58,10 @@ void			section_32(struct load_command *lc, t_file_ptr *ptr,
 void			section_64(struct load_command *lc, t_file_ptr *ptr,
 	struct mach_header_64 *header, int *i_tab);
 
-int				*find_order_32(struct symtab_command *sym, char *str, struct nlist *el,
-	uint32_t magic);
-int				*find_order_64(struct symtab_command *sym, char *str, struct nlist_64 *el,
-	uint32_t magic);
+int				*find_order_32(struct symtab_command *sym, char *str,
+	struct nlist *el, uint32_t magic);
+int				*find_order_64(struct symtab_command *sym, char *str,
+	struct nlist_64 *el, uint32_t magic);
 
 void			handle_32(struct s_file_ptr *ptr, uint8_t ppc);
 void			handle_64(struct s_file_ptr *ptr, uint8_t ppc);
@@ -105,8 +105,10 @@ int				ft_strcmp(const char *s1, const char *s2);
 char			*ft_strdup(char *src);
 int				ft_strlen(char *str);
 
-int				nb_good_sym_32(struct symtab_command *sym, struct nlist *el, uint32_t magic, struct s_file_ptr *ptr);
-int				nb_good_sym_64(struct symtab_command *sym, struct nlist_64 *el, uint32_t magic, struct s_file_ptr *ptr);
+int				nb_good_sym_32(struct symtab_command *sym, struct nlist *el,
+	uint32_t magic, struct s_file_ptr *ptr);
+int				nb_good_sym_64(struct symtab_command *sym, struct nlist_64 *el,
+	uint32_t magic, struct s_file_ptr *ptr);
 uint32_t		swap_endian(uint32_t value, uint32_t magic);
 uint64_t		swap_endian_64(uint64_t value, uint32_t magic);
 uint16_t		swap_endian_short(uint16_t value, uint32_t magic);
