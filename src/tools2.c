@@ -33,6 +33,22 @@ uint64_t	swap_endian_64(uint64_t value, uint32_t magic)
 	return (value);
 }
 
+int			check_size(struct s_file_ptr *ptr, char *str)
+{
+	int	i;
+
+	i = 0;
+	if ((void *)&str[i] >= ptr->max)
+			return (0);
+	while (str && str[i] != 0)
+	{
+		i++;
+		if ((void *)&str[i] >= ptr->max)
+			return (0);
+	}
+	return (1);
+}
+
 int			nb_good_sym_64(struct symtab_command *sym, struct nlist_64 *el,
 	uint32_t m, struct s_file_ptr *ptr)
 {
@@ -43,11 +59,10 @@ int			nb_good_sym_64(struct symtab_command *sym, struct nlist_64 *el,
 	good_sym = 0;
 	while (i < swap_endian(sym->nsyms, m))
 	{
-		if (ptr && ((void *)(&el[i]) > ptr->max || (void *)(ptr->ptr
-			+ swap_endian(sym->stroff, m) + swap_endian(el[i].n_un.n_strx, m)) >
-				ptr->max))
+		if (ptr && ((void *)(&el[i]) >= ptr->max 
+		|| !(check_size(ptr, (void *)(ptr->ptr + swap_endian(sym->stroff, m) + swap_endian(el[i].n_un.n_strx, m))))))
 			return (-1);
-		if (!(swap_endian(el[i].n_type, m) & N_STAB))
+		if (!(el[i].n_type & N_STAB))
 			good_sym++;
 		i++;
 	}
@@ -64,11 +79,10 @@ int			nb_good_sym_32(struct symtab_command *sym, struct nlist *el,
 	good_sym = 0;
 	while (i < swap_endian(sym->nsyms, m))
 	{
-		if (ptr && ((void *)(&el[i]) > ptr->max || (void *)(ptr->ptr
-			+ swap_endian(sym->stroff, m) + swap_endian(el[i].n_un.n_strx, m))
-				> ptr->max))
+		if (ptr && ((void *)(&el[i]) >= ptr->max 
+		|| !(check_size(ptr, (void *)(ptr->ptr + swap_endian(sym->stroff, m) + swap_endian(el[i].n_un.n_strx, m))))))
 			return (-1);
-		if (!(swap_endian(el[i].n_type, m) & N_STAB))
+		if (!(el[i].n_type & N_STAB))
 			good_sym++;
 		i++;
 	}

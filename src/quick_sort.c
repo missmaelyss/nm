@@ -97,6 +97,9 @@ void	quicksort_32(struct s_quick *data, struct nlist *el)
 {
 	struct s_pivot	p;
 
+	// printf("%d %d\n", data->start, data->end);
+	// printf("left: %s\n", data->s + swap_endian(el[data->t[data->start]].n_un.n_strx, data->m));
+	// printf("right: %s\n", data->s + swap_endian(el[data->t[data->end]].n_un.n_strx, data->m));
 	if (data->start >= data->end)
 		return ;
 	p.l = data->start;

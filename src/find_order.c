@@ -26,7 +26,7 @@ int		*find_order_64(struct symtab_command *sym, char *str,
 	good_sym = 0;
 	while (i < swap_endian(sym->nsyms, m))
 	{
-		if (!(swap_endian(el[i].n_type, m) & N_STAB))
+		if (!(el[i].n_type & N_STAB))
 		{
 			itab[good_sym] = i;
 			good_sym++;
@@ -51,7 +51,7 @@ int		*find_order_32(struct symtab_command *sym, char *str,
 	good_sym = 0;
 	while (i < swap_endian(sym->nsyms, m))
 	{
-		if (!(swap_endian(el[i].n_type, m) & N_STAB))
+		if (!(el[i].n_type & N_STAB))
 		{
 			itab[good_sym] = i;
 			good_sym++;
