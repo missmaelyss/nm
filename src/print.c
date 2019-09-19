@@ -12,6 +12,22 @@
 
 #include <nm_otool.h>
 
+int		check_size(struct s_file_ptr *ptr, char *str)
+{
+	int	i;
+
+	i = 0;
+	if ((void *)&str[i] >= ptr->max)
+		return (0);
+	while (str && str[i] != 0)
+	{
+		i++;
+		if ((void *)&str[i] >= ptr->max)
+			return (0);
+	}
+	return (1);
+}
+
 void	print_symbol(uint8_t n_type, uint8_t n_sect,
 		uint16_t n_desc, uint32_t type)
 {
@@ -27,6 +43,8 @@ void	print_symbol(uint8_t n_type, uint8_t n_sect,
 		else if ((n_type - (N_EXT & n_type)) == N_INDR)
 			type_symbol = 'i';
 	}
+	else if (type == 0)
+		type_symbol = 'c';
 	else
 		type_symbol = 'u';
 	if ((N_EXT & n_type) != 0x0)
@@ -40,7 +58,9 @@ void	print_value(uint64_t n_value, int size, uint32_t n_type)
 	char		*str;
 	int			n;
 	const char	alpha[16] = "0123456789abcdef";
+	uint64_t	start;
 
+	start = n_value;
 	if (!(str = (char *)malloc(sizeof(char) * (size + 1))))
 		return (ft_error("malloc", "Error."));
 	n = size - 1;
@@ -48,7 +68,7 @@ void	print_value(uint64_t n_value, int size, uint32_t n_type)
 	while (n >= 0)
 	{
 		str[n] = alpha[n_value % 16];
-		if ((size == 16 && n_type == 1) || (size == 8 && n_type == 0x1))
+		if ((N_TYPE & n_type) == 0x0 && !start)
 			str[n] = ' ';
 		n_value = n_value / 16;
 		n--;

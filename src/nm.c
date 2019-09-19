@@ -17,7 +17,7 @@ char	*g_cpu_type_tab[18] =
 	"vax", "", "", "", "", "mc680x0", "x86", "", "", "mc98000", "hppa", "arm",
 	"mc88000", "sparc", "i860", "", "", "ppc"
 };
-char	g_section_symbol[30] = "";
+char	g_section_symbol[50] = "";
 
 void	pick_h(uint32_t mg, struct s_file_ptr *ptr, cpu_type_t c, char *av)
 {

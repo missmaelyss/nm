@@ -17,13 +17,13 @@ void		handle_lyb_otool(struct s_file_ptr *ptr, char *av)
 	struct ar_hdr	*h;
 
 	h = (struct ar_hdr *)(ptr->ptr + 0x8);
+	if ((void *)h >= ptr->max)
+		return ;
 	write(1, "Archive : ", 10);
 	write(1, av, ft_strlen(av));
 	write(1, "\n", 1);
-	while (atoi(h->ar_size))
+	while (ft_atoi(h->ar_size))
 	{
-		if ((void *)h > ptr->max)
-			return ;
 		if (ft_strcmp(h->ar_fmag, "`\n__.SYMDEF SORTED") != 0
 				&& ft_strcmp(h->ar_fmag, "`\n__.SYMDEF"))
 		{
@@ -33,9 +33,11 @@ void		handle_lyb_otool(struct s_file_ptr *ptr, char *av)
 					1 : 0)) * 0x8 + 0x4, ptr->max}, av, 0);
 		}
 		ptr->ptr = (void *)(h->ar_fmag) + 2 + ft_atoi(h->ar_size);
+		h = (struct ar_hdr *)(ptr->ptr);
+		if ((void *)h >= ptr->max)
+			return ;
 		if (OSSwapConstInt64(*(uint64_t *)(ptr->ptr)) == 0x213C617263683E0A)
 			break ;
-		h = (struct ar_hdr *)(ptr->ptr);
 	}
 }
 

@@ -48,7 +48,7 @@ typedef struct	s_pivot
 }				t_pivot;
 
 char			*g_cpu_type_tab[18];
-char			g_section_symbol[30];
+char			g_section_symbol[50];
 
 void			fill_section_32(struct s_file_ptr *ptr, uint8_t ppc);
 void			fill_section_64(struct s_file_ptr *ptr, uint8_t ppc);
@@ -76,6 +76,7 @@ void			nm(struct s_file_ptr *ptr, char *av, uint8_t mult);
 void			pick_h(uint32_t mg, struct s_file_ptr *ptr, cpu_type_t c,
 	char *av);
 
+int				check_size(struct s_file_ptr *ptr, char *str);
 void			print_for_arch(cpu_type_t cputype);
 void			print_path(char *av, uint8_t nm);
 void			print_symbol(uint8_t n_type, uint8_t n_sect, uint16_t n_desc,

@@ -18,7 +18,7 @@ void	ft_nstab_64(struct nlist_64 el, uint32_t m, uint8_t ppc,
 	print_value(swap_endian_64(el.n_value, m), 16, !ppc ?
 			swap_endian(el.n_type, m) : el.n_type);
 	print_symbol(el.n_type, el.n_sect,
-			swap_endian_short(el.n_desc, m), 16);
+			swap_endian_short(el.n_desc, m), el.n_value == 0);
 	write(1, stringtable + swap_endian(el.n_un.n_strx, m),
 			ft_strlen(stringtable + swap_endian(el.n_un.n_strx, m)));
 	write(1, "\n", 1);
@@ -30,7 +30,7 @@ void	ft_nstab_32(struct nlist el, uint32_t m, uint8_t ppc,
 	print_value(swap_endian(el.n_value, m), 8, !ppc ?
 			swap_endian(el.n_type, m) : el.n_type);
 	print_symbol(el.n_type, el.n_sect,
-			swap_endian_short(el.n_desc, m), 16);
+			swap_endian_short(el.n_desc, m), el.n_value == 0);
 	write(1, stringtable + swap_endian(el.n_un.n_strx, m),
 			ft_strlen(stringtable + swap_endian(el.n_un.n_strx, m)));
 	write(1, "\n", 1);
